@@ -1,0 +1,533 @@
+[
+  {
+    "id": "weather",
+    "group": "tools",
+    "label": "Weather -> real API",
+    "simulate_outage": false,
+    "message": "What's the weather in Jaipur today?",
+    "calls": [
+      {
+        "tool": "get_weather",
+        "args": {
+          "city": "Jaipur"
+        },
+        "source": "model",
+        "attempts": [
+          {
+            "by": "model",
+            "raw": "{\"tool\": \"get_weather\", \"args\": {\"city\": \"Jaipur\"}}",
+            "ok": true,
+            "ms": 7702
+          }
+        ],
+        "whitelisted": true,
+        "status": "ok",
+        "result": {
+          "city": "Jaipur",
+          "country": "India",
+          "temperature_c": 20.6,
+          "condition": "clear sky",
+          "humidity_pct": 58,
+          "wind_kmh": 5.7,
+          "forecast": [
+            {
+              "date": "2026-11-03",
+              "min_c": 18.5,
+              "max_c": 29.7,
+              "rain_chance_pct": 0,
+              "condition": "clear sky"
+            },
+            {
+              "date": "2026-11-04",
+              "min_c": 19.5,
+              "max_c": 29.8,
+              "rain_chance_pct": 0,
+              "condition": "clear sky"
+            },
+            {
+              "date": "2026-11-05",
+              "min_c": 18.7,
+              "max_c": 30.5,
+              "rain_chance_pct": 0,
+              "condition": "clear sky"
+            }
+          ],
+          "source": "Open-Meteo (live)"
+        },
+        "error": null,
+        "stage": "execute",
+        "ms": 2745
+      }
+    ],
+    "pending": null,
+    "answer": "The current temperature in Jaipur is 20.6\u00b0C with clear skies. The humidity is at 58%. There will be no rain forecast for today.",
+    "answered_by": "model",
+    "choice_attempts": [],
+    "elapsed_s": 14.12
+  },
+  {
+    "id": "currency",
+    "group": "tools",
+    "label": "Currency -> live rates",
+    "simulate_outage": false,
+    "message": "Convert 250 USD to INR",
+    "calls": [
+      {
+        "tool": "convert_currency",
+        "args": {
+          "amount": 250.0,
+          "from_currency": "USD",
+          "to_currency": "INR"
+        },
+        "source": "model",
+        "attempts": [
+          {
+            "by": "model",
+            "raw": "{\"tool\": \"convert_currency\", \"args\": {\"amount\": 250, \"from_currency\": \"USD\", \"to_currency\": \"INR\"}}",
+            "ok": true,
+            "ms": 4362
+          }
+        ],
+        "whitelisted": true,
+        "status": "ok",
+        "result": {
+          "amount": 250.0,
+          "from": "USD",
+          "to": "INR",
+          "rate": 94.75,
+          "converted": 23687.5,
+          "source": "Frankfurter (live, 2026-11-03)",
+          "note": null
+        },
+        "error": null,
+        "stage": "execute",
+        "ms": 738
+      }
+    ],
+    "pending": null,
+    "answer": "The amount of 250 USD is approximately 23,687.5 INR. The conversion rate is 94.75 INR per USD. Please note that this value may vary slightly due to currency fluctuations.",
+    "answered_by": "model",
+    "choice_attempts": [],
+    "elapsed_s": 9.91
+  },
+  {
+    "id": "hotels",
+    "group": "tools",
+    "label": "Hotel search -> local data",
+    "simulate_outage": false,
+    "message": "Find hotels in Goa under 6000 per night for 2 guests",
+    "calls": [
+      {
+        "tool": "search_hotels",
+        "args": {
+          "city": "Goa",
+          "max_price_per_night": 6000.0,
+          "guests": 2
+        },
+        "source": "model",
+        "attempts": [
+          {
+            "by": "model",
+            "raw": "{\"tool\": \"search_hotels\", \"args\": {\"city\": \"Goa\", \"max_price_per_night\": 6000, \"guests\": 2}}",
+            "ok": true,
+            "ms": 4758
+          }
+        ],
+        "whitelisted": true,
+        "status": "ok",
+        "result": {
+          "city": "Goa",
+          "count": 2,
+          "hotels": [
+            {
+              "id": "H02",
+              "name": "Sunset Shack Stay",
+              "city": "Goa",
+              "area": "Anjuna",
+              "price_per_night": 2800,
+              "max_guests": 2,
+              "rating": 4.1
+            },
+            {
+              "id": "H01",
+              "name": "Palm Shore Resort",
+              "city": "Goa",
+              "area": "Calangute",
+              "price_per_night": 5200,
+              "max_guests": 3,
+              "rating": 4.4
+            }
+          ],
+          "data": "sample data",
+          "note": null
+        },
+        "error": null,
+        "stage": "execute",
+        "ms": 0
+      }
+    ],
+    "pending": null,
+    "answer": "I found two hotels in Goa under 6000 per night for 2 guests: Sunset Shack Stay with a price of 2800 per night and Palm Shore Resort with a price of 5200 per night. Both have a rating of 4.1 and 4.4 respectively.",
+    "answered_by": "model",
+    "choice_attempts": [],
+    "elapsed_s": 10.92
+  },
+  {
+    "id": "list",
+    "group": "tools",
+    "label": "List bookings",
+    "simulate_outage": false,
+    "message": "Show my bookings",
+    "calls": [
+      {
+        "tool": "list_bookings",
+        "args": {},
+        "source": "model",
+        "attempts": [
+          {
+            "by": "model",
+            "raw": "{\"tool\": \"list_bookings\"}",
+            "ok": true,
+            "ms": 2175
+          }
+        ],
+        "whitelisted": true,
+        "status": "ok",
+        "result": {
+          "count": 1,
+          "bookings": [
+            {
+              "booking_id": "BK1001",
+              "hotel_id": "H01",
+              "hotel_name": "Palm Shore Resort",
+              "city": "Goa",
+              "guest_name": "Asha",
+              "check_in": "2026-12-10",
+              "check_out": "2026-12-12",
+              "guests": 2,
+              "nights": 2,
+              "total_inr": 10400,
+              "status": "confirmed"
+            }
+          ]
+        },
+        "error": null,
+        "stage": "execute",
+        "ms": 0
+      }
+    ],
+    "pending": null,
+    "answer": "I found your bookings for Palm Shore Resort in Goa. You booked two nights with guests named Asha on December 10th and 12th at check-in date 2026-12-10. Your total cost was INR 10400.",
+    "answered_by": "model",
+    "choice_attempts": [],
+    "elapsed_s": 7.74
+  },
+  {
+    "id": "book",
+    "group": "tools",
+    "label": "Booking -> needs Confirm",
+    "simulate_outage": false,
+    "message": "Book hotel H05 for Krishna from 2026-12-20 to 2026-12-23 for 2 guests",
+    "calls": [
+      {
+        "tool": "book_hotel",
+        "args": {
+          "hotel_id": "H05",
+          "guest_name": "Krishna",
+          "check_in": "2026-12-20",
+          "check_out": "2026-12-23",
+          "guests": 2
+        },
+        "source": "model",
+        "attempts": [
+          {
+            "by": "model",
+            "raw": "{\"tool\": \"book_hotel\", \"args\": {\"hotel_id\": \"H05\", \"guest_name\": \"Krishna\", \"check_in\": \"2026-12-20\", \"check_out\": \"2026-12-23\", \"guests\": 2}}",
+            "ok": true,
+            "ms": 7388
+          }
+        ],
+        "whitelisted": true,
+        "status": "pending",
+        "result": {
+          "hotel_id": "H05",
+          "hotel_name": "Amber View Palace",
+          "city": "Jaipur",
+          "guest_name": "Krishna",
+          "check_in": "2026-12-20",
+          "check_out": "2026-12-23",
+          "guests": 2,
+          "nights": 3,
+          "total_inr": 22200
+        },
+        "stage": "confirm",
+        "ms": 0
+      }
+    ],
+    "pending": {
+      "id": "1ecaeec9",
+      "tool": "book_hotel",
+      "summary": {
+        "hotel_id": "H05",
+        "hotel_name": "Amber View Palace",
+        "city": "Jaipur",
+        "guest_name": "Krishna",
+        "check_in": "2026-12-20",
+        "check_out": "2026-12-23",
+        "guests": 2,
+        "nights": 3,
+        "total_inr": 22200
+      }
+    },
+    "answer": "Please confirm: book Amber View Palace (Jaipur) for Krishna, 2026-12-20 -> 2026-12-23, 2 guest(s), 3 nights, total INR 22,200.",
+    "answered_by": "template",
+    "choice_attempts": [],
+    "elapsed_s": 7.39,
+    "confirmed": {
+      "status": "done",
+      "tool": "book_hotel",
+      "result": {
+        "booking_id": "BK1002",
+        "hotel_id": "H05",
+        "hotel_name": "Amber View Palace",
+        "city": "Jaipur",
+        "guest_name": "Krishna",
+        "check_in": "2026-12-20",
+        "check_out": "2026-12-23",
+        "guests": 2,
+        "nights": 3,
+        "total_inr": 22200,
+        "status": "confirmed"
+      },
+      "ms": 0,
+      "answer": "Booked! Your booking id is BK1002: Amber View Palace, 2026-12-20 -> 2026-12-23, total INR 22,200."
+    }
+  },
+  {
+    "id": "cancel",
+    "group": "tools",
+    "label": "Cancel -> needs Confirm",
+    "simulate_outage": false,
+    "message": "Cancel booking BK1001",
+    "calls": [
+      {
+        "tool": "cancel_booking",
+        "args": {
+          "booking_id": "BK1001"
+        },
+        "source": "model",
+        "attempts": [
+          {
+            "by": "model",
+            "raw": "{\"tool\": \"cancel_booking\", \"args\": {\"booking_id\": \"BK1001\"}}",
+            "ok": true,
+            "ms": 3299
+          }
+        ],
+        "whitelisted": true,
+        "status": "pending",
+        "result": {
+          "booking_id": "BK1001",
+          "hotel_id": "H01",
+          "hotel_name": "Palm Shore Resort",
+          "city": "Goa",
+          "guest_name": "Asha",
+          "check_in": "2026-12-10",
+          "check_out": "2026-12-12",
+          "guests": 2,
+          "nights": 2,
+          "total_inr": 10400,
+          "status": "confirmed"
+        },
+        "stage": "confirm",
+        "ms": 0
+      }
+    ],
+    "pending": {
+      "id": "c816d77b",
+      "tool": "cancel_booking",
+      "summary": {
+        "booking_id": "BK1001",
+        "hotel_id": "H01",
+        "hotel_name": "Palm Shore Resort",
+        "city": "Goa",
+        "guest_name": "Asha",
+        "check_in": "2026-12-10",
+        "check_out": "2026-12-12",
+        "guests": 2,
+        "nights": 2,
+        "total_inr": 10400,
+        "status": "confirmed"
+      }
+    },
+    "answer": "Please confirm: cancel booking BK1001 at Palm Shore Resort for Asha (2026-12-10 -> 2026-12-12).",
+    "answered_by": "template",
+    "choice_attempts": [],
+    "elapsed_s": 3.3,
+    "confirmed": {
+      "status": "done",
+      "tool": "cancel_booking",
+      "result": {
+        "booking_id": "BK1001",
+        "hotel_id": "H01",
+        "hotel_name": "Palm Shore Resort",
+        "city": "Goa",
+        "guest_name": "Asha",
+        "check_in": "2026-12-10",
+        "check_out": "2026-12-12",
+        "guests": 2,
+        "nights": 2,
+        "total_inr": 10400,
+        "status": "cancelled"
+      },
+      "ms": 0,
+      "answer": "Done - booking BK1001 is now cancelled."
+    }
+  },
+  {
+    "id": "badcity",
+    "group": "errors",
+    "label": "Unknown city -> clear error",
+    "simulate_outage": false,
+    "message": "What's the weather in Qwertyville?",
+    "calls": [
+      {
+        "tool": "get_weather",
+        "args": {
+          "city": "Qwertyville"
+        },
+        "source": "model",
+        "attempts": [
+          {
+            "by": "model",
+            "raw": "{\"tool\": \"get_weather\", \"args\": {\"city\": \"Qwertyville\"}}",
+            "ok": true,
+            "ms": 3136
+          }
+        ],
+        "whitelisted": true,
+        "status": "error",
+        "result": null,
+        "error": "city 'Qwertyville' was not found - check the spelling",
+        "stage": "execute",
+        "ms": 797
+      }
+    ],
+    "pending": null,
+    "answer": "Sorry, I couldn't do that: city 'Qwertyville' was not found - check the spelling.",
+    "answered_by": "template (error)",
+    "choice_attempts": [],
+    "elapsed_s": 3.93
+  },
+  {
+    "id": "baddates",
+    "group": "errors",
+    "label": "Bad dates -> rejected",
+    "simulate_outage": false,
+    "message": "Book hotel H05 for Ravi from 2026-12-25 to 2026-12-20 for 2 guests",
+    "calls": [
+      {
+        "tool": "book_hotel",
+        "args": {
+          "hotel_id": "H05",
+          "guest_name": "Ravi",
+          "check_in": "2026-12-25",
+          "check_out": "2026-12-20",
+          "guests": 2
+        },
+        "source": "model",
+        "attempts": [
+          {
+            "by": "model",
+            "raw": "{\"tool\": \"book_hotel\", \"args\": {\"hotel_id\": \"H05\", \"guest_name\": \"Ravi\", \"check_in\": \"2026-12-25\", \"check_out\": \"2026-12-20\", \"guests\": 2}}",
+            "ok": true,
+            "ms": 7429
+          }
+        ],
+        "whitelisted": true,
+        "status": "error",
+        "error": "check-out 2026-12-20 must be after check-in 2026-12-25",
+        "stage": "validate",
+        "ms": 0
+      }
+    ],
+    "pending": null,
+    "answer": "Sorry, I couldn't do that: check-out 2026-12-20 must be after check-in 2026-12-25.",
+    "answered_by": "template (error)",
+    "choice_attempts": [],
+    "elapsed_s": 7.43
+  },
+  {
+    "id": "outage",
+    "group": "errors",
+    "label": "API down -> cached rates",
+    "simulate_outage": true,
+    "message": "Convert 100 EUR to INR",
+    "calls": [
+      {
+        "tool": "convert_currency",
+        "args": {
+          "amount": 100.0,
+          "from_currency": "EUR",
+          "to_currency": "INR"
+        },
+        "source": "model",
+        "attempts": [
+          {
+            "by": "model",
+            "raw": "{\"tool\": \"convert_currency\", \"args\": {\"amount\": 100, \"from_currency\": \"EUR\", \"to_currency\": \"INR\"}}",
+            "ok": true,
+            "ms": 4345
+          }
+        ],
+        "whitelisted": true,
+        "status": "ok",
+        "result": {
+          "amount": 100.0,
+          "from": "EUR",
+          "to": "INR",
+          "rate": 90.5,
+          "converted": 9050.0,
+          "source": "cached table (approximate)",
+          "note": "Live rate API failed (service unavailable after 1 retry (ConnectionError)); used cached approximate rates."
+        },
+        "error": null,
+        "stage": "execute",
+        "ms": 4684
+      }
+    ],
+    "pending": null,
+    "answer": "The currency conversion is accurate at 9050 INR for 100 EUR. The source of this information is a live rate API that may have been unavailable after one retry due to service issues. Note: Live rate API failed (service unavailable after 1 retry (ConnectionError)); used cached approximate rates.",
+    "answered_by": "model",
+    "choice_attempts": [],
+    "elapsed_s": 13.35
+  },
+  {
+    "id": "invalid",
+    "group": "errors",
+    "label": "Invalid request -> polite refusal",
+    "simulate_outage": false,
+    "message": "Book me a flight to Mars",
+    "calls": [],
+    "pending": null,
+    "answer": "Sorry, I can't do that. I can check weather, convert currency, and search, book, list or cancel hotel bookings.",
+    "answered_by": "polite failure",
+    "choice_attempts": [
+      {
+        "by": "model",
+        "raw": "{\"tool\": \"book_hotel\", \"args\": {\"hotel_id\": \"B001\", \"guest_name\": \"Alice\", \"check_in\": \"2029-11-15\", \"check_out\": \"2029-11-15\", \"guests\": 1}}",
+        "ok": false,
+        "error": "invalid args: hotel_id: Value error, must look like H05",
+        "ms": 7239
+      },
+      {
+        "by": "model",
+        "raw": "{\"tool\": \"book_hotel\", \"args\": {\"hotel_id\": \"B001\", \"guest_name\": \"Alice\", \"check_in\": \"2029-11-15\", \"check_out\": \"2029-11-15\", \"guests\": 1}}",
+        "ok": false,
+        "error": "invalid args: hotel_id: Value error, must look like H05",
+        "ms": 7559
+      }
+    ],
+    "elapsed_s": 14.8
+  }
+]

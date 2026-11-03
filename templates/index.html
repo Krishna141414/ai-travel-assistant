@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Console</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%A4%96%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ---------- tokens: Task 10 "Agent Console" ---------- */
+:root{
+  --bg:#111827; --bg2:#0b111c; --panel:rgba(255,255,255,.045); --panel2:rgba(255,255,255,.07);
+  --line:rgba(255,255,255,.10); --text:#E5E7EB; --muted:#9CA3AF;
+  --green:#22C55E; --sky:#38BDF8; --orange:#FB923C; --red:#F43F5E;
+  --blue:#4F7CFF; --pink:#FF3D81;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:hidden}
+a{color:var(--sky)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+section{padding:72px 0}
+h2{font-size:clamp(26px,4vw,36px);margin:0 0 6px;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:0 0 28px}
+.kicker{font:600 12px var(--mono);color:var(--green);letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;backdrop-filter:blur(10px)}
+.mono{font-family:var(--mono)}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:92vh;display:flex;align-items:center;overflow:hidden;padding:60px 0}
+.hero::before{content:"";position:absolute;inset:-30%;background:radial-gradient(40% 40% at 25% 30%,rgba(79,124,255,.55),transparent 70%),radial-gradient(40% 40% at 75% 70%,rgba(255,61,129,.45),transparent 70%);animation:drift 14s ease-in-out infinite alternate;filter:blur(30px)}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 70%,var(--bg)),repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 28px)}
+@keyframes drift{to{transform:translate(6%,-4%) rotate(8deg)}}
+.hero .wrap{position:relative;z-index:1;display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center;width:100%}
+.badge{display:inline-flex;gap:8px;align-items:center;padding:6px 14px;border-radius:99px;background:rgba(17,24,39,.6);border:1px solid var(--line);font:600 13px var(--mono);color:var(--green)}
+.badge i{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+.hero h1{font-size:clamp(38px,6.5vw,68px);line-height:1.04;margin:18px 0 14px;letter-spacing:-.03em}
+.hero h1 span{background:linear-gradient(90deg,var(--sky),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{font-size:clamp(17px,2vw,20px);color:#D1D5DB;max-width:560px;margin:0 0 22px}
+.term{background:rgba(5,8,15,.75);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font:14px var(--mono);max-width:560px;margin-bottom:26px;overflow-wrap:anywhere}
+.term .dots{display:flex;gap:6px;margin-bottom:10px}.term .dots b{width:10px;height:10px;border-radius:50%;background:#374151}
+.term .p{color:var(--green)}.term .k{color:var(--sky)}.term .o{color:var(--orange)}
+.cursor{display:inline-block;width:9px;height:17px;background:var(--green);vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:12px;padding:13px 22px;font:600 15px Inter;cursor:pointer;color:#06120a;background:var(--green);box-shadow:0 0 0 0 rgba(34,197,94,.5);transition:transform .15s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px -6px rgba(34,197,94,.6)}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.orbit{position:relative;width:min(380px,80vw);aspect-ratio:1;margin:auto}
+.orbit .ring{position:absolute;inset:0;border-radius:50%;border:1px dashed rgba(56,189,248,.35);animation:spin 28s linear infinite}
+.orbit .ring.r2{inset:18%;border-color:rgba(34,197,94,.3);animation-duration:20s;animation-direction:reverse}
+.orbit .core{position:absolute;inset:36%;border-radius:50%;display:grid;place-items:center;font-size:44px;background:radial-gradient(circle,#1f2937,#0b111c);border:1px solid var(--line);box-shadow:0 0 60px rgba(56,189,248,.35),inset 0 0 30px rgba(34,197,94,.2)}
+.orbit .sat{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px;border-radius:16px;display:grid;place-items:center;font-size:24px;background:rgba(17,24,39,.85);border:1px solid var(--line);box-shadow:0 0 18px rgba(56,189,248,.25)}
+.orbit .spin{position:absolute;inset:0;animation:spin 28s linear infinite}
+.orbit .spin .sat{animation:spin 28s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- requirement cards ---------- */
+.reqs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.req{padding:20px;cursor:pointer;position:relative;transition:transform .2s,border-color .2s}
+.req:hover{transform:translateY(-3px);border-color:rgba(56,189,248,.5)}
+.req .ic{font-size:26px}
+.req h3{margin:8px 0 4px;font-size:17px}
+.req p{margin:0;color:var(--muted);font-size:14px}
+.req .num{position:absolute;top:16px;right:56px;font:600 12px var(--mono);color:var(--muted)}
+.check{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center}
+.check svg{width:16px;height:16px;stroke:var(--green);stroke-width:3;fill:none;stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset .5s ease .1s}
+.req.done{border-color:rgba(34,197,94,.45)}
+.req.done .check{border-color:var(--green);box-shadow:0 0 14px rgba(34,197,94,.5)}
+.req.done .check svg{stroke-dashoffset:0}
+
+/* ---------- demo ---------- */
+.toolbelt{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:22px}
+.tool{padding:12px;text-align:center;transition:all .3s}
+.tool .ic{font-size:22px}.tool b{display:block;font-size:13px;margin-top:4px}
+.tool small{display:block;color:var(--muted);font:11px var(--mono);margin-top:2px}
+.tool .conf{display:inline-block;margin-top:6px;font:600 10px var(--mono);color:var(--orange);border:1px solid rgba(251,146,60,.4);border-radius:6px;padding:1px 6px}
+.tool.used{border-color:rgba(56,189,248,.5)}
+.tool.hot{border-color:var(--sky);box-shadow:0 0 24px rgba(56,189,248,.45);transform:translateY(-3px)}
+.examples{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px;align-items:center}
+.examples .lbl{font:600 12px var(--mono);color:var(--muted);width:100%;text-transform:uppercase;letter-spacing:.1em}
+.ex{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;padding:9px 13px;font:500 13.5px Inter;cursor:pointer;transition:all .2s}
+.ex:hover:not(:disabled){border-color:var(--sky);color:#fff}
+.ex.err{border-color:rgba(244,63,94,.35)}.ex.err:hover:not(:disabled){border-color:var(--red)}
+.ex:disabled{opacity:.45;cursor:not-allowed}
+.ex.on{background:rgba(56,189,248,.15);border-color:var(--sky)}
+.modebar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.mode{font:13px var(--mono);color:var(--muted)}
+.toggle{display:none;align-items:center;gap:10px;font:600 14px Inter;cursor:pointer;user-select:none}
+.toggle.show{display:inline-flex}
+.toggle .sw{width:44px;height:24px;border-radius:99px;background:#374151;position:relative;transition:.2s}
+.toggle .sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s}
+.toggle.on .sw{background:var(--green)}.toggle.on .sw::after{left:23px}
+
+.steps{display:grid;grid-template-columns:repeat(5,1fr);position:relative;margin:24px 0 20px;padding:0 4px}
+.steps .track{position:absolute;left:10%;right:10%;top:21px;height:3px;background:var(--line);border-radius:3px;overflow:hidden}
+.steps .fill{height:100%;width:0;background:linear-gradient(90deg,var(--sky),var(--green));transition:width .6s ease;position:relative}
+.steps .fill::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);animation:flow 1.2s linear infinite}
+@keyframes flow{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.step{text-align:center;position:relative;z-index:1}
+.step .node{width:44px;height:44px;margin:0 auto 8px;border-radius:50%;display:grid;place-items:center;background:#1f2937;border:2px solid var(--line);font-size:18px;transition:all .3s}
+.step .name{font:600 13px Inter}
+.step .out{font:12px var(--mono);color:var(--muted);min-height:34px;margin-top:4px;opacity:0;transform:translateY(-6px);transition:all .4s;overflow-wrap:anywhere;padding:0 4px}
+.step.active .node{border-color:var(--sky);box-shadow:0 0 0 6px rgba(56,189,248,.15),0 0 24px var(--sky)}
+.step.done .node{border-color:var(--green);background:rgba(34,197,94,.15)}
+.step.err .node{border-color:var(--red);background:rgba(244,63,94,.15);box-shadow:0 0 22px rgba(244,63,94,.5)}
+.step.wait .node{border-color:var(--orange);box-shadow:0 0 22px rgba(251,146,60,.6)}
+.step .out.show{opacity:1;transform:none}
+.step.done .out{color:var(--green)}.step.err .out{color:var(--red)}.step.wait .out{color:var(--orange)}
+
+.console{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pane{padding:16px;min-height:430px;display:flex;flex-direction:column}
+.pane h3{margin:0 0 12px;font:600 13px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.12em;display:flex;justify-content:space-between}
+.chatlog{flex:1;display:flex;flex-direction:column;gap:10px;overflow:auto;max-height:560px;padding-right:4px}
+.msg{max-width:92%;padding:10px 14px;border-radius:14px;animation:pop .35s ease}
+.msg.user{align-self:flex-end;background:rgba(56,189,248,.16);border:1px solid rgba(56,189,248,.35)}
+.msg.bot{align-self:flex-start;background:var(--panel2);border:1px solid var(--line)}
+.msg.bot .by{font:11px var(--mono);color:var(--muted);margin-top:6px}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}}
+.empty{color:var(--muted);text-align:center;margin:auto;font-size:14px}
+.chatform{display:flex;gap:8px;margin-top:12px}
+.chatform input{flex:1;min-width:0;background:#0b111c;border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--text);font:14px Inter}
+.chatform input:disabled{opacity:.6}
+.chatform .btn{padding:10px 16px}
+.chatform .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+.loader{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:6px}
+
+.trace{display:flex;flex-direction:column;gap:10px;overflow:auto;max-height:560px;font-size:13.5px}
+.tr{border-left:3px solid var(--sky);background:rgba(255,255,255,.03);border-radius:0 10px 10px 0;padding:9px 12px;animation:slide .4s ease}
+.tr.ok{border-color:var(--green)}.tr.bad{border-color:var(--red)}.tr.warn{border-color:var(--orange)}
+@keyframes slide{from{opacity:0;transform:translateX(14px)}}
+.tr .h{font:600 12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+pre.j{margin:6px 0 0;padding:8px 10px;background:#0b111c;border:1px solid var(--line);border-radius:8px;font:12px/1.5 var(--mono);white-space:pre-wrap;word-break:break-word;color:#cbd5e1}
+.pill{display:inline-block;font:600 11px var(--mono);padding:2px 8px;border-radius:99px;border:1px solid}
+.pill.model{color:var(--sky);border-color:rgba(56,189,248,.5)}
+.pill.fallback{color:var(--orange);border-color:rgba(251,146,60,.6);background:rgba(251,146,60,.1)}
+.pill.ok{color:var(--green);border-color:rgba(34,197,94,.5)}
+.pill.bad{color:var(--red);border-color:rgba(244,63,94,.5)}
+.pill.warn{color:var(--orange);border-color:rgba(251,146,60,.5)}
+.okc{color:var(--green)}.badc{color:var(--red)}.warnc{color:var(--orange)}
+
+/* result cards inside chat */
+.rc{margin-top:8px;padding:12px;border-radius:12px;background:#0b111c;border:1px solid var(--line);font-size:14px}
+.rc.bad{border-color:rgba(244,63,94,.5);background:rgba(244,63,94,.07)}
+.rc .big{font-size:30px;font-weight:800;letter-spacing:-.02em}
+.rc .row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
+.rc .row:first-of-type{border-top:0}
+.rc .fc{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.rc .fc div{background:var(--panel);border-radius:8px;padding:6px;text-align:center;font-size:12px}
+.muted{color:var(--muted)}
+details.tech{margin-top:14px}
+details.tech summary{cursor:pointer;color:var(--muted);font:600 13px var(--mono)}
+details.tech pre{max-height:380px;overflow:auto}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(3,6,12,.72);display:none;place-items:center;z-index:50;padding:16px;backdrop-filter:blur(4px)}
+.modal.open{display:grid}
+.modal .box{max-width:440px;width:100%;padding:24px;border-radius:18px;background:#141c2b;border:1px solid rgba(251,146,60,.5);box-shadow:0 0 60px rgba(251,146,60,.25);animation:pop .3s ease}
+.modal h3{margin:0 0 6px;display:flex;gap:8px;align-items:center}
+.modal .acts{display:flex;gap:10px;margin-top:18px}
+.modal .acts .btn{flex:1;justify-content:center}
+.modal .note{font-size:12.5px;color:var(--muted);margin-top:10px}
+
+/* results */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.tile{padding:18px}
+.tile .v{font-size:34px;font-weight:800;letter-spacing:-.02em}
+.tile .l{color:var(--muted);font-size:13px}
+.charts{display:grid;grid-template-columns:1fr 1.4fr;gap:16px;margin-bottom:20px}
+.charts .card{padding:16px;height:300px}
+.tablewrap{overflow-x:auto;padding:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font:600 12px var(--mono);text-transform:uppercase}
+.findings{margin:18px 0 0;padding-left:20px}.findings li{margin:6px 0}
+
+/* how it works */
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;padding:22px}
+.fbox{padding:12px 14px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);font-size:13.5px;text-align:center;min-width:120px}
+.fbox b{display:block;font-size:14px}.fbox small{color:var(--muted)}
+.fbox.g{border-color:rgba(34,197,94,.5)}.fbox.s{border-color:rgba(56,189,248,.5)}.fbox.o{border-color:rgba(251,146,60,.6)}
+.arrow{color:var(--muted);font-size:20px}
+.side{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:0 22px 22px;font-size:13px;color:var(--muted)}
+.side span{padding:6px 10px;border:1px dashed var(--line);border-radius:8px}
+.codes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.code{padding:0;overflow:hidden}
+.code .fn{padding:9px 14px;border-bottom:1px solid var(--line);font:600 12px var(--mono);color:var(--sky)}
+.code pre{margin:0;padding:14px;font:12.5px/1.55 var(--mono);overflow-x:auto;color:#cbd5e1}
+.code .c{color:#6b7280}.code .kw{color:var(--orange)}.code .st{color:var(--green)}
+.limits li{margin:8px 0}
+footer{padding:36px 0;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+
+@media (max-width:900px){
+  .hero .wrap,.console,.charts,.codes{grid-template-columns:1fr}
+  .toolbelt{grid-template-columns:repeat(3,1fr)}
+  .orbit{width:min(300px,80vw)}
+}
+@media (max-width:560px){
+  .wrap{padding:0 16px}
+  .steps .name{font-size:11px}.step .out{font-size:10px}.step .node{width:36px;height:36px;font-size:15px}
+  .steps .track{top:17px}
+  .toolbelt{grid-template-columns:repeat(2,1fr)}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <span class="badge"><i></i>Task 10 - AI Assistant with Tool Calling</span>
+      <h1>AI Travel <span>Agent Console</span></h1>
+      <p class="lead">A small local AI model reads your travel request, picks the right tool (weather, currency, hotels, bookings), runs it safely and answers with the real result - asking you first before it books or cancels anything.</p>
+      <div class="term" aria-label="example tool call">
+        <div class="dots"><b></b><b></b><b></b></div>
+        <span class="p">user&gt;</span> weather in Jaipur?<br>
+        <span class="p">agent&gt;</span> <span id="heroType"></span><span class="cursor"></span>
+      </div>
+      <button class="btn" onclick="document.getElementById('demo').scrollIntoView()">&#9654; Start demo</button>
+      <a class="btn ghost" href="#how" style="margin-left:8px;text-decoration:none">How it works</a>
+    </div>
+    <div class="orbit" aria-hidden="true">
+      <div class="ring"></div><div class="ring r2"></div>
+      <div class="spin" id="orbit"></div>
+      <div class="core">&#129302;</div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ REQUIREMENTS ============ -->
+<section id="reqs">
+  <div class="wrap">
+    <div class="kicker">01 - the brief</div>
+    <h2>What this task asks</h2>
+    <p class="sub">Each requirement from the brief, and how this project does it. Click a card to jump to it in the live demo - it gets a check mark once the demo has shown it.</p>
+    <div class="reqs" id="reqCards"></div>
+  </div>
+</section>
+
+<!-- ============ DEMO ============ -->
+<section id="demo">
+  <div class="wrap">
+    <div class="kicker">02 - live demo</div>
+    <h2>Watch the agent work</h2>
+    <p class="sub">Pick an example. The chat is on the left, the agent trace on the right: tool picked &rarr; args validated &rarr; API called &rarr; result &rarr; answer.</p>
+
+    <div class="modebar">
+      <div class="mode" id="modeText">Mode: instant replay (recorded from the real pipeline)</div>
+      <label class="toggle" id="liveToggle"><span class="sw"></span><span>Run live (local model)</span></label>
+    </div>
+
+    <div class="toolbelt" id="toolbelt"></div>
+
+    <div class="examples" id="ex-tools"><span class="lbl">Tools</span></div>
+    <div class="examples" id="ex-errors"><span class="lbl">Validation &amp; errors</span></div>
+
+    <div class="steps" id="steps">
+      <div class="track"><div class="fill" id="fill"></div></div>
+    </div>
+
+    <div class="console">
+      <div class="card pane" id="chat">
+        <h3><span>Chat</span><span id="elapsed"></span></h3>
+        <div class="chatlog" id="chatlog"><div class="empty">Pick an example above to start.</div></div>
+        <form class="chatform" id="chatform">
+          <input id="chatin" placeholder="Turn on 'Run live' to type your own request" disabled maxlength="500">
+          <button class="btn" id="sendbtn" disabled>Send</button>
+        </form>
+        <div class="hint" id="hint">Instant replay uses recorded outputs of the real model, so the page works without a backend.</div>
+      </div>
+      <div class="card pane" id="trace">
+        <h3><span>Agent trace</span><span id="srcBadge"></span></h3>
+        <div class="trace" id="tracelog"><div class="empty">Every step of the agent appears here.</div></div>
+      </div>
+    </div>
+    <details class="tech"><summary>Show technical details (raw model output + full response JSON)</summary><pre class="j" id="techJson">Run an example first.</pre></details>
+  </div>
+</section>
+
+<!-- ============ RESULTS ============ -->
+<section id="results">
+  <div class="wrap">
+    <div class="kicker">03 - evaluation</div>
+    <h2>Results</h2>
+    <p class="sub">From <span class="mono">evaluate.py</span>: 12 test requests run through the real pipeline (Qwen2.5-0.5B-Instruct on CPU).</p>
+    <div class="tiles" id="tiles"></div>
+    <div class="charts">
+      <div class="card"><canvas id="chartSource"></canvas></div>
+      <div class="card"><canvas id="chartChecks"></canvas></div>
+    </div>
+    <div class="card tablewrap"><table id="resTable"></table></div>
+    <ul class="findings" id="findings"></ul>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how">
+  <div class="wrap">
+    <div class="kicker">04 - under the hood</div>
+    <h2>How it works</h2>
+    <p class="sub">One user message goes through this loop (max 3 tool calls per message).</p>
+    <div class="card reveal">
+      <div class="flow">
+        <div class="fbox"><b>User message</b><small>chat / example</small></div><span class="arrow">&rarr;</span>
+        <div class="fbox s"><b>LLM picks tool</b><small>ONLY JSON {tool, args}</small></div><span class="arrow">&rarr;</span>
+        <div class="fbox s"><b>Parse + Pydantic</b><small>name in whitelist, args schema</small></div><span class="arrow">&rarr;</span>
+        <div class="fbox o"><b>Important action?</b><small>book / cancel</small></div><span class="arrow">&rarr;</span>
+        <div class="fbox g"><b>Execute safely</b><small>timeout, retry, try/except</small></div><span class="arrow">&rarr;</span>
+        <div class="fbox g"><b>LLM answers</b><small>from tool results</small></div>
+      </div>
+      <div class="side">
+        <span>invalid JSON / unknown tool / bad args &rarr; error sent back to model &rarr; 1 retry</span>
+        <span>still invalid &rarr; keyword + regex <b class="warnc">fallback</b> router</span>
+        <span>book / cancel &rarr; preview + <b class="warnc">Confirm</b> modal; saved only after Confirm</span>
+        <span>currency API down &rarr; cached rates, labelled</span>
+      </div>
+    </div>
+    <div class="codes">
+      <div class="card code reveal"><div class="fn">assistant.py - validate()</div><pre><span class="kw">if</span> tool <span class="kw">not in</span> tools.TOOLS:   <span class="c"># whitelist</span>
+    <span class="kw">raise</span> ValueError(<span class="st">f"unknown tool '{tool}'"</span>)
+<span class="kw">try</span>:   <span class="c"># Pydantic schema per tool</span>
+    <span class="kw">return</span> tool, tools.TOOLS[tool][<span class="st">"schema"</span>](**args)
+<span class="kw">except</span> ValidationError <span class="kw">as</span> e:
+    <span class="kw">raise</span> ValueError(<span class="st">"invalid args: "</span> + ...)</pre></div>
+      <div class="card code reveal"><div class="fn">assistant.py - choose_tool()</div><pre><span class="kw">for</span> attempt <span class="kw">in</span> range(<span class="st">2</span>):        <span class="c"># 1 retry</span>
+    raw = generate(msgs)
+    <span class="kw">try</span>: <span class="kw">return</span> validate(parse_call(raw), ...)
+    <span class="kw">except</span> ValueError <span class="kw">as</span> e:    <span class="c"># tell the model</span>
+        msgs += [assistant(raw), user(<span class="st">f"Error: {e}"</span>)]
+routed = router.route(message)  <span class="c"># "fallback"</span></pre></div>
+      <div class="card code reveal"><div class="fn">assistant.py - handle(): confirmation</div><pre><span class="kw">if</span> tools.TOOLS[tool][<span class="st">"confirm"</span>]:   <span class="c"># book / cancel</span>
+    r = run_tool(tool, args, <span class="st">"confirm"</span>)  <span class="c"># preview only</span>
+    PENDING[pid] = {<span class="st">"tool"</span>: tool, <span class="st">"args"</span>: args}
+<span class="c"># ... later, only on the Confirm button:</span>
+<span class="kw">def</span> confirm(pid, approve): ... run_tool(...)</pre></div>
+      <div class="card code reveal"><div class="fn">assistant.py - run_tool()</div><pre><span class="kw">try</span>:
+    result = tools.TOOLS[tool][fn_key](args)
+    <span class="kw">return</span> {<span class="st">"ok"</span>: True, <span class="st">"result"</span>: result}
+<span class="kw">except</span> tools.ToolError <span class="kw">as</span> e:   <span class="c"># readable</span>
+    <span class="kw">return</span> {<span class="st">"ok"</span>: False, <span class="st">"error"</span>: str(e)}
+<span class="kw">except</span> Exception <span class="kw">as</span> e:         <span class="c"># never crash</span>
+    <span class="kw">return</span> {<span class="st">"ok"</span>: False, <span class="st">"error"</span>: <span class="st">f"internal error: {e}"</span>}</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LIMITATIONS ============ -->
+<section id="limits">
+  <div class="wrap">
+    <div class="kicker">05 - honest notes</div>
+    <h2>Limitations</h2>
+    <ul class="limits reveal">
+      <li>The model is tiny (Qwen2.5-0.5B on CPU): replies take a few seconds each, and it sometimes picks bad args - that is why validation, retry and the fallback router exist.</li>
+      <li>Hotels are <b>sample data</b> (20 fictional hotels in Indian cities); bookings are a local JSON file, no real payments.</li>
+      <li>The fallback router uses simple keywords + regex, so it only understands plainly worded requests.</li>
+      <li>Successful answers are written by the small model and can word things loosely; the result card always shows the exact tool output. Errors use a fixed template, because in testing the model once described a rejected booking as "confirmed".</li>
+      <li>Cached currency rates are approximate and only used (and labelled) when the live API fails.</li>
+    </ul>
+  </div>
+</section>
+
+<footer><div class="wrap">Built by <b>Krishna</b> - VoidMain internship, Task 10 &middot; <a href="https://github.com/Krishna141414/ai-travel-assistant">github.com/Krishna141414/ai-travel-assistant</a></div></footer>
+
+<!-- confirmation modal -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="box">
+    <h3 id="mTitle">&#9888;&#65039; Confirm important action</h3>
+    <div class="muted" id="mSub"></div>
+    <div class="rc" id="mBody"></div>
+    <div class="acts">
+      <button class="btn" id="mYes">Confirm</button>
+      <button class="btn ghost" id="mNo">Cancel</button>
+    </div>
+    <div class="note">Nothing has been saved yet. The tool only runs after you press Confirm.</div>
+  </div>
+</div>
+
+<script>
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const sleep = ms => new Promise(r => setTimeout(r, RM ? 30 : ms));
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt = n => Number(n).toLocaleString('en-IN', {maximumFractionDigits: 2});
+
+const TOOLS = [
+  {id:'get_weather', ic:'&#9728;&#65039;', name:'Weather', src:'Open-Meteo API'},
+  {id:'convert_currency', ic:'&#128177;', name:'Currency', src:'Frankfurter API'},
+  {id:'search_hotels', ic:'&#127976;', name:'Hotel search', src:'data/hotels.json'},
+  {id:'book_hotel', ic:'&#128221;', name:'Book hotel', src:'data/bookings.json', confirm:true},
+  {id:'cancel_booking', ic:'&#10006;&#65039;', name:'Cancel booking', src:'data/bookings.json', confirm:true},
+  {id:'list_bookings', ic:'&#128203;', name:'List bookings', src:'data/bookings.json'},
+];
+const TOOL = Object.fromEntries(TOOLS.map(t => [t.id, t]));
+const SCHEMA = {get_weather:'WeatherArgs', convert_currency:'CurrencyArgs', search_hotels:'HotelSearchArgs',
+  book_hotel:'BookArgs', cancel_booking:'CancelArgs', list_bookings:'ListArgs'};
+const REQS = [
+  {id:'tools', ic:'&#129520;', t:'Multiple meaningful tools', d:'6 tools: weather, currency, hotel search, book, cancel, list - each with a Pydantic schema.', go:'toolbelt'},
+  {id:'select', ic:'&#129504;', t:'Model selects tool + args', d:'The local LLM replies with ONLY a JSON {tool, args}; a keyword router is the labelled fallback.', go:'trace'},
+  {id:'safe', ic:'&#128737;&#65039;', t:'Safe execution', d:'Whitelist check, max 3 calls, timeouts + 1 retry on real APIs, every exception caught.', go:'trace'},
+  {id:'valid', ic:'&#9888;&#65039;', t:'Validation & error handling', d:'Unknown city, bad dates, API outage -> cached rates, invalid request -> polite refusal.', go:'ex-errors'},
+  {id:'confirm', ic:'&#9995;', t:'Confirmation for important actions', d:'Book / cancel open a Confirm / Cancel modal; nothing is saved until Confirm.', go:'ex-tools'},
+  {id:'answer', ic:'&#128172;', t:'Final response from results', d:'The model writes the reply from the tool output; the exact result is shown as a card.', go:'chat'},
+  {id:'results', ic:'&#128202;', t:'Results', d:'evaluate.py: tool accuracy, model vs fallback, errors handled, confirmations.', go:'results'},
+];
+const STEPS = [['req','&#128172;','Request'], ['choice','&#129504;','Tool choice'], ['valid','&#128269;','Validate'],
+  ['exec','&#9881;&#65039;','Execute'], ['answer','&#9989;','Answer']];
+
+const S = {demo: [], live: false, busy: false, used: new Set()};
+
+/* ---------- build static parts ---------- */
+$('orbit').innerHTML = TOOLS.map((t, i) => {
+  const a = i / TOOLS.length * 2 * Math.PI, r = 44;
+  return `<div class="sat" style="left:${50 + r * Math.cos(a)}%;top:${50 + r * Math.sin(a)}%">${t.ic}</div>`;
+}).join('');
+$('reqCards').innerHTML = REQS.map((r, i) => `<div class="card req reveal" id="req-${r.id}" data-go="${r.go}">
+  <span class="num">0${i + 1}</span><div class="check"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L19 7"/></svg></div>
+  <div class="ic">${r.ic}</div><h3>${r.t}</h3><p>${r.d}</p></div>`).join('');
+document.querySelectorAll('.req').forEach(el => el.onclick = () => $(el.dataset.go).scrollIntoView({block: 'center'}));
+$('toolbelt').innerHTML = TOOLS.map(t => `<div class="card tool" id="tool-${t.id}"><div class="ic">${t.ic}</div><b>${t.name}</b>
+  <small>${t.id}()</small>${t.confirm ? '<span class="conf">needs confirm</span>' : ''}</div>`).join('');
+$('steps').insertAdjacentHTML('beforeend', STEPS.map(([id, ic, name]) =>
+  `<div class="step" id="st-${id}"><div class="node">${ic}</div><div class="name">${name}</div><div class="out" id="so-${id}"></div></div>`).join(''));
+const mark = id => $('req-' + id)?.classList.add('done');
+
+/* hero: typed tool call */
+(async () => {
+  const s = '{"tool": "get_weather", "args": {"city": "Jaipur"}}';
+  for (let i = 0; ; i = (i + 1) % (s.length + 40)) {
+    $('heroType').innerHTML = `<span class="k">${esc(s.slice(0, Math.min(i, s.length)))}</span>`;
+    await sleep(i < s.length ? 45 : 60);
+    if (RM) { $('heroType').innerHTML = `<span class="k">${esc(s)}</span>`; break; }
+  }
+})();
+
+/* scroll reveal + results check */
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  e.target.classList.add('in');
+  if (e.target.id === 'results') { mark('results'); drawResults(); }
+}), {threshold: .15});
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+io.observe($('results'));
+
+/* ---------- step bar helpers ---------- */
+function resetSteps() {
+  STEPS.forEach(([id]) => { $('st-' + id).className = 'step'; const o = $('so-' + id); o.className = 'out'; o.textContent = ''; });
+  $('fill').style.width = '0';
+}
+async function step(id, state, text) {
+  const i = STEPS.findIndex(s => s[0] === id);
+  $('fill').style.width = (i / (STEPS.length - 1) * 100) + '%';
+  const el = $('st-' + id); el.className = 'step active';
+  await sleep(450);
+  el.className = 'step ' + state;
+  const o = $('so-' + id); o.textContent = text; o.classList.add('show');
+}
+function trace(cls, head, html) {
+  const log = $('tracelog'); log.querySelector('.empty')?.remove();
+  log.insertAdjacentHTML('beforeend', `<div class="tr ${cls}"><div class="h">${head}</div>${html}</div>`);
+  log.scrollTop = log.scrollHeight;
+}
+function chat(cls, html) {
+  const log = $('chatlog'); log.querySelector('.empty')?.remove();
+  const d = document.createElement('div'); d.className = 'msg ' + cls; d.innerHTML = html;
+  log.appendChild(d); log.scrollTop = log.scrollHeight; return d;
+}
+async function typeInto(el, text) {
+  if (RM) { el.textContent = text; return; }
+  for (let i = 0; i <= text.length; i += 2) { el.textContent = text.slice(0, i); await sleep(14); $('chatlog').scrollTop = 1e9; }
+  el.textContent = text;
+}
+function hotTool(id) {
+  document.querySelectorAll('.tool').forEach(t => t.classList.remove('hot'));
+  const el = $('tool-' + id); if (!el) return;
+  el.classList.add('hot', 'used'); S.used.add(id);
+  if (S.used.size >= 2) mark('tools');
+}
+
+/* ---------- result cards ---------- */
+function resultCard(tool, r) {
+  if (!r) return '';
+  if (tool === 'get_weather') return `<div class="rc"><div class="muted">${esc(r.city)}, ${esc(r.country)} &middot; ${esc(r.source)}</div>
+    <div class="big">${r.temperature_c}&deg;C <span style="font-size:16px;font-weight:500">${esc(r.condition)}</span></div>
+    <div class="muted">Humidity ${r.humidity_pct}% &middot; wind ${r.wind_kmh} km/h</div>
+    <div class="fc">${r.forecast.map(f => `<div><b>${f.date.slice(5)}</b><br>${f.min_c}&ndash;${f.max_c}&deg;<br>&#9748; ${f.rain_chance_pct ?? '-'}%</div>`).join('')}</div></div>`;
+  if (tool === 'convert_currency') return `<div class="rc"><div class="big">${fmt(r.amount)} ${r.from} &rarr; ${fmt(r.converted)} ${r.to}</div>
+    <div class="muted">rate ${r.rate} &middot; <span class="pill ${r.note ? 'warn' : 'ok'}">${esc(r.source)}</span></div>
+    ${r.note ? `<div class="warnc" style="margin-top:6px">&#9888; ${esc(r.note)}</div>` : ''}</div>`;
+  if (tool === 'search_hotels') return `<div class="rc"><div class="muted">${r.count} match(es) in ${esc(r.city)} &middot; ${esc(r.data)}${r.note ? ` &middot; ${esc(r.note)}` : ''}</div>
+    ${r.hotels.map(h => `<div class="row"><span><b>${h.id}</b> ${esc(h.name)} <span class="muted">${esc(h.area)}</span></span>
+    <span>&#8377;${fmt(h.price_per_night)} &middot; &#128100;${h.max_guests} &middot; &#9733;${h.rating}</span></div>`).join('')}</div>`;
+  if (tool === 'list_bookings') return `<div class="rc"><div class="muted">${r.count} booking(s)</div>${r.bookings.map(b =>
+    `<div class="row"><span><b>${b.booking_id}</b> ${esc(b.hotel_name)} &middot; ${esc(b.guest_name)}</span>
+    <span>${b.check_in} &rarr; ${b.check_out} <span class="pill ${b.status === 'confirmed' ? 'ok' : 'bad'}">${b.status}</span></span></div>`).join('')}</div>`;
+  if (tool === 'book_hotel' || tool === 'cancel_booking') return `<div class="rc">
+    ${r.booking_id ? `<div class="row"><span>Booking</span><b>${r.booking_id}</b></div>` : ''}
+    <div class="row"><span>Hotel</span><b>${esc(r.hotel_name)} (${r.hotel_id})</b></div>
+    <div class="row"><span>Guest</span><span>${esc(r.guest_name)} &middot; ${r.guests} guest(s)</span></div>
+    <div class="row"><span>Dates</span><span>${r.check_in} &rarr; ${r.check_out} (${r.nights} nights)</span></div>
+    <div class="row"><span>Total</span><b>&#8377;${fmt(r.total_inr)}</b></div>
+    ${r.status ? `<div class="row"><span>Status</span><span class="pill ${r.status === 'confirmed' ? 'ok' : 'bad'}">${r.status}</span></div>` : ''}</div>`;
+  return `<pre class="j">${esc(JSON.stringify(r, null, 2))}</pre>`;
+}
+const errCard = e => `<div class="rc bad"><b class="badc">&#10006; Error:</b> ${esc(e)}</div>`;
+const srcPill = s => `<span class="pill ${s === 'fallback' ? 'fallback' : 'model'}">picked by ${esc(s)}</span>`;
+
+/* ---------- confirmation modal ---------- */
+function askConfirm(p) {
+  mark('confirm');
+  $('mSub').textContent = p.tool === 'book_hotel' ? 'The assistant wants to book this hotel:' : 'The assistant wants to cancel this booking:';
+  $('mBody').innerHTML = resultCard(p.tool, p.summary).replace(/^<div class="rc">|<\/div>$/g, '');
+  $('modal').classList.add('open'); $('mYes').focus();
+  return new Promise(res => {
+    $('mYes').onclick = () => { $('modal').classList.remove('open'); res(true); };
+    $('mNo').onclick = () => { $('modal').classList.remove('open'); res(false); };
+  });
+}
+
+/* ---------- the run: replay one response through the pipeline ---------- */
+async function play(r, ex) {
+  const calls = r.calls || [];
+  // 2. tool choice
+  const attempts = calls.length ? calls.flatMap(c => c.attempts) : (r.choice_attempts || []);
+  for (const [i, a] of attempts.entries()) {
+    trace(a.ok ? 'ok' : 'bad', `attempt ${i + 1} &middot; <span class="pill ${a.by === 'fallback' ? 'fallback' : 'model'}">${a.by}</span>${a.ms ? ` &middot; ${(a.ms / 1000).toFixed(1)} s` : ''}`,
+      `<pre class="j">${esc(a.raw)}</pre>${a.ok ? '<div class="okc">&#10003; parsed + valid JSON tool call</div>' : `<div class="badc">&#10006; ${esc(a.error)} &rarr; ${a.by === 'fallback' ? 'giving up' : i === 0 ? 'error sent back, retry' : 'fallback router'}</div>`}`);
+    await sleep(500);
+  }
+  mark('select');
+  if (!calls.length) {
+    const polite = r.answered_by === 'polite failure';
+    trace(polite ? 'bad' : 'warn', 'decision', polite ? 'No valid tool call after retry + fallback &rarr; polite failure (no tool runs).' : 'Model chose <b>"tool": "none"</b> - no tool needed.');
+    await step('choice', polite ? 'err' : 'done', polite ? 'no valid tool' : 'none');
+    await step('valid', polite ? 'err' : 'done', polite ? 'rejected' : '-');
+    await step('exec', 'done', 'nothing run');
+    if (polite) mark('valid');
+  }
+  for (const c of calls) {
+    hotTool(c.tool);
+    $('srcBadge').innerHTML = srcPill(c.source);
+    trace('ok', `tool choice ${srcPill(c.source)}`, `<pre class="j">${esc(JSON.stringify({tool: c.tool, args: c.args}, null, 1))}</pre>`);
+    await step('choice', 'done', `${c.tool} (${c.source})`);
+    // 3. validate
+    const badRule = c.status === 'error' && c.stage === 'validate';
+    trace(badRule ? 'bad' : 'ok', `validate &middot; ${SCHEMA[c.tool]}`,
+      `<div class="okc">&#10003; args match the Pydantic schema</div>` +
+      (TOOL[c.tool].confirm ? (badRule ? `<div class="badc">&#10006; business rule: ${esc(c.error)}</div>` : '<div class="okc">&#10003; rules checked (hotel exists, future dates, capacity / booking exists)</div>') : ''));
+    await step('valid', badRule ? 'err' : 'done', badRule ? 'rule failed' : 'args valid');
+    if (badRule) { mark('valid'); await step('exec', 'err', 'blocked'); continue; }
+    // 4. execute (or hold for confirmation)
+    trace('ok', 'whitelist', `<div class="okc">&#10003; <span class="mono">${c.tool}</span> is in the allowed tool list (call ${calls.indexOf(c) + 1} of max 3)</div>`);
+    await sleep(350);
+    if (c.status === 'pending') {
+      trace('warn', 'held for confirmation', '<div class="warnc">&#9208; important action - not executed, waiting for the user</div>');
+      await step('exec', 'wait', 'waiting for Confirm');
+      continue;
+    }
+    const isErr = c.status === 'error', note = c.result?.note;
+    trace(isErr ? 'bad' : note ? 'warn' : 'ok', `execute &rarr; ${TOOL[c.tool].src} &middot; ${c.ms} ms`,
+      isErr ? `<div class="badc">&#10006; ${esc(c.error)}</div>` : `${note ? `<div class="warnc">&#9888; ${esc(note)}</div>` : ''}<pre class="j">${esc(JSON.stringify(c.result, null, 1)).slice(0, 700)}</pre>`);
+    await step('exec', isErr ? 'err' : note ? 'wait' : 'done', isErr ? 'error caught' : `${c.ms} ms`);
+    if (isErr || note) mark('valid');
+    if (!isErr) mark('safe');
+  }
+  // 5. answer
+  const bot = chat('bot', '<span class="t"></span>');
+  await step('answer', 'active', 'typing...');
+  await typeInto(bot.querySelector('.t'), r.answer || '');
+  calls.forEach(c => bot.insertAdjacentHTML('beforeend', c.status === 'error' ? errCard(c.error) : resultCard(c.tool, c.status === 'pending' ? c.result : c.result)));
+  bot.insertAdjacentHTML('beforeend', `<div class="by">written by: ${esc(r.answered_by)}</div>`);
+  await step('answer', r.pending ? 'wait' : 'done', r.pending ? 'needs Confirm' : r.answered_by);
+  mark('answer');
+  // confirmation flow
+  if (r.pending) {
+    await sleep(400);
+    const yes = await askConfirm(r.pending);
+    let res;
+    if (S.live) res = await api('/api/confirm', {id: r.pending.id, approve: yes});
+    else res = yes ? r.confirmed : {status: 'cancelled', answer: 'Okay, cancelled - nothing was saved.'};
+    if (res.status === 'done') {
+      trace('ok', `user confirmed &rarr; execute ${res.tool} &middot; ${res.ms} ms`, `<div class="okc">&#10003; saved to data/bookings.json${S.live ? '' : ' (recorded replay)'}</div><pre class="j">${esc(JSON.stringify(res.result, null, 1))}</pre>`);
+      await step('exec', 'done', 'confirmed + saved');
+    } else {
+      trace(res.status === 'cancelled' ? 'warn' : 'bad', res.status === 'cancelled' ? 'user cancelled' : 'error', `<div class="${res.status === 'cancelled' ? 'warnc' : 'badc'}">${res.status === 'cancelled' ? 'Nothing was executed or saved.' : esc(res.error)}</div>`);
+      await step('exec', res.status === 'cancelled' ? 'wait' : 'err', res.status === 'cancelled' ? 'cancelled, not saved' : 'error');
+    }
+    const b2 = chat('bot', '<span class="t"></span>');
+    await typeInto(b2.querySelector('.t'), res.answer);
+    if (res.result) b2.insertAdjacentHTML('beforeend', resultCard(res.tool, res.result));
+    await step('answer', 'done', res.status);
+  }
+}
+
+async function api(url, body) {
+  const r = await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+async function run(text, ex) {
+  if (S.busy) return;
+  S.busy = true; setBusy(true);
+  resetSteps(); $('tracelog').innerHTML = ''; $('chatlog').innerHTML = ''; $('srcBadge').innerHTML = ''; $('elapsed').textContent = '';
+  document.querySelectorAll('.tool').forEach(t => t.classList.remove('hot'));
+  chat('user', esc(text));
+  trace('', 'request', `<div>${esc(text)}</div>${ex?.simulate_outage ? '<div class="warnc">demo switch: currency API forced offline</div>' : ''}`);
+  await step('req', 'done', S.live ? 'sent to local model' : 'replay');
+  let r;
+  try {
+    if (S.live) {
+      const w = chat('bot', '<span class="loader"></span>Working... (CPU model, ~10-30 s)');
+      $('st-choice').className = 'step active';
+      r = await api('/api/chat', {message: text, simulate_outage: !!ex?.simulate_outage});
+      w.remove();
+    } else r = ex;
+    $('techJson').textContent = JSON.stringify(r, null, 2);
+    $('elapsed').textContent = r.elapsed_s ? `${r.elapsed_s} s on CPU` : '';
+    await play(r, ex);
+  } catch (e) {
+    chat('bot', errCard('Backend not reachable: ' + e.message));
+  }
+  S.busy = false; setBusy(false);
+}
+function setBusy(b) {
+  document.querySelectorAll('.ex').forEach(x => x.disabled = b);
+  $('sendbtn').disabled = b || !S.live; $('chatin').disabled = b || !S.live;
+}
+
+/* ---------- examples + live toggle ---------- */
+fetch('web/demo_data.json').then(r => r.json()).then(data => {
+  S.demo = data;
+  data.forEach(ex => {
+    const b = document.createElement('button');
+    b.className = 'ex' + (ex.group === 'errors' ? ' err' : ''); b.id = 'ex-' + ex.id;
+    b.innerHTML = esc(ex.label); b.title = ex.message;
+    b.onclick = () => { document.querySelectorAll('.ex').forEach(x => x.classList.remove('on')); b.classList.add('on'); run(ex.message, ex); };
+    $(ex.group === 'errors' ? 'ex-errors' : 'ex-tools').appendChild(b);
+  });
+}).catch(() => { $('hint').textContent = 'Could not load web/demo_data.json - run python build_demo.py and open the page via python app.py.'; });
+
+fetch('api/health').then(r => r.ok && r.json()).then(h => { if (h && h.ok) $('liveToggle').classList.add('show'); }).catch(() => {});
+$('liveToggle').onclick = e => {
+  e.preventDefault(); if (S.busy) return;
+  S.live = !S.live; $('liveToggle').classList.toggle('on', S.live);
+  $('modeText').textContent = S.live ? 'Mode: LIVE - requests go to the local model (python app.py)' : 'Mode: instant replay (recorded from the real pipeline)';
+  $('chatin').placeholder = S.live ? 'Ask e.g. "weather in Goa" or "book hotel H12 ..."' : "Turn on 'Run live' to type your own request";
+  $('hint').textContent = S.live ? 'Live: the real model runs on CPU, so each request takes ~10-30 s. Bookings are saved to data/bookings.json after Confirm.' : 'Instant replay uses recorded outputs of the real model, so the page works without a backend.';
+  setBusy(false);
+};
+$('chatform').onsubmit = e => {
+  e.preventDefault(); const t = $('chatin').value.trim();
+  if (t && S.live) { $('chatin').value = ''; run(t, null); }
+};
+
+/* ---------- results ---------- */
+let drawn = false;
+async function drawResults() {
+  if (drawn) return; drawn = true;
+  let d;
+  try { d = await (await fetch('web/results.json')).json(); } catch { $('findings').innerHTML = '<li>Run python evaluate.py to create web/results.json.</li>'; return; }
+  const s = d.summary, n = s.total;
+  const tiles = [
+    [Math.round(s.tool_correct / n * 100), '%', 'correct tool chosen'],
+    [s.by_model, `/${n}`, 'picked by the model'],
+    [s.by_fallback, `/${n}`, 'picked by fallback router'],
+    [s.errors_handled, `/${s.errors_expected}`, 'errors handled'],
+    [s.confirm_triggered, `/${s.confirm_expected}`, 'confirmations triggered'],
+    [s.avg_seconds, ' s', 'avg time per request (CPU)'],
+  ];
+  $('tiles').innerHTML = tiles.map(([v, u, l]) => `<div class="card tile"><div class="v"><span class="cu" data-v="${v}">0</span>${u}</div><div class="l">${l}</div></div>`).join('');
+  document.querySelectorAll('.cu').forEach(el => {
+    const v = +el.dataset.v, dec = v % 1 ? 1 : 0, t0 = performance.now();
+    const tick = t => { const p = RM ? 1 : Math.min(1, (t - t0) / 1200); el.textContent = (v * (1 - (1 - p) ** 3)).toFixed(dec); if (p < 1) requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  });
+  if (window.Chart) {
+    Chart.defaults.color = '#9CA3AF'; Chart.defaults.font.family = 'Inter';
+    new Chart($('chartSource'), {type: 'doughnut', data: {labels: ['Model (1st try)', 'Model (after retry)', 'Fallback router', 'Polite failure'],
+      datasets: [{data: [s.by_model - s.by_model_retry, s.by_model_retry, s.by_fallback, s.polite_failure], backgroundColor: ['#38BDF8', '#22C55E', '#FB923C', '#F43F5E'], borderColor: '#111827', borderWidth: 3}]},
+      options: {maintainAspectRatio: false, animation: {duration: RM ? 0 : 1200}, plugins: {title: {display: true, text: 'Who picked the tool?'}, legend: {position: 'bottom'}}}});
+    const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+    new Chart($('chartChecks'), {type: 'bar', data: {labels: ['Correct tool', 'Args valid', 'Errors handled', 'Confirmations'],
+      datasets: [{data: [pct(s.tool_correct, n), pct(s.args_valid, n), pct(s.errors_handled, s.errors_expected), pct(s.confirm_triggered, s.confirm_expected)],
+        backgroundColor: ['#38BDF8', '#22C55E', '#FB923C', '#22C55E'], borderRadius: 8}]},
+      options: {maintainAspectRatio: false, animation: {duration: RM ? 0 : 1200}, scales: {y: {min: 0, max: 100, ticks: {callback: v => v + '%'}, grid: {color: 'rgba(255,255,255,.06)'}}, x: {grid: {display: false}}},
+        plugins: {title: {display: true, text: 'Pass rate per check (%)'}, legend: {display: false}}}});
+  }
+  const y = b => b ? '<span class="okc">&#10003;</span>' : '<span class="badc">&#10006;</span>';
+  $('resTable').innerHTML = '<tr><th>#</th><th>Request</th><th>Expected</th><th>Chosen</th><th>Picked by</th><th>Tool</th><th>Args</th><th>Error handled</th><th>Confirm</th></tr>' +
+    d.rows.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r.request)}</td><td class="mono">${r.expected}</td><td class="mono">${r.chosen}</td>
+      <td><span class="pill ${r.source === 'fallback' ? 'fallback' : r.source === 'polite failure' ? 'bad' : 'model'}">${esc(r.source)}</span></td><td>${y(r.tool_ok)}</td><td>${y(r.args_valid)}</td><td>${r.error_handled === null ? '-' : y(r.error_handled)}</td>
+      <td>${r.confirm_expected ? (r.confirm_ok ? `<span class="okc">&#10003; ${esc(r.saved)}</span>` : y(false)) : (r.confirm_ok ? '-' : y(false))}</td></tr>`).join('');
+  $('findings').innerHTML = [
+    `The model chose the correct tool in <b>${s.tool_correct}/${n}</b> requests; ${s.by_model - s.by_model_retry} on the first try${s.by_model_retry ? `, ${s.by_model_retry} after the error-feedback retry` : ''}.`,
+    `The fallback router was needed ${s.by_fallback} time(s) - and is always labelled "fallback" so it never hides a model mistake.`,
+    `${s.errors_handled === s.errors_expected ? 'All ' : ''}${s.errors_handled}/${s.errors_expected} problem requests (unknown city, bad dates, API outage, invalid request) gave a readable message instead of a crash.`,
+    `Book and cancel triggered a confirmation ${s.confirm_triggered}/${s.confirm_expected} times, and nothing was saved until Confirm${s.confirm_ok_all === n ? '; no other request asked for confirmation' : ''}.`,
+    `A tiny CPU model is enough for tool choice (~${s.avg_seconds} s per request incl. the final answer), as long as the output is validated.`,
+  ].map(t => `<li>${t}</li>`).join('');
+}
+</script>
+</body>
+</html>
